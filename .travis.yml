@@ -6,11 +6,24 @@ before_install:
     - chmod +x gradlew
 
 script:
+    - sed -i " 1 s/.*/&-b$(git rev-list --count HEAD)-$(git rev-parse --short HEAD)/" version
+    - sed -i "s/BUILD_VERSION/$(head -c -1 version)/g" bintray.json
     - TERM=dumb ./gradlew clean build dist
 
 after_success:
     - TERM=dumb ./gradlew jacocoTestReport
     - bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
+
+deploy:
+    provider: bintray
+    file: bintray.json
+    user: skylot
+    key:
+      secure: bBzfhraRwT5w+FkAcQnWJQgt4i894k595g4gNFf8dGpBsvPUvGzoa/SUaokrmlj5UCFc12k7j6aZswNITGjBuAf2fDVRwMQCH9ORiqIcJWuemQPHB7iAQjITGXKwef6zWKcZSkVuMtUMmGymYSsqpya+pSqwdP5rLbWPgGixEaQ=
+    skip_cleanup: true
+    on:
+      branch: master
+      tags: false
 
 sudo: false
 
